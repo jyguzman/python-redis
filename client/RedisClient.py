@@ -1,36 +1,37 @@
 import socket
-import sys
+from resp.resp import serializeRequest, deserialize
 
 class RedisClient:
     def __init__(self, host="localhost", port=6379):
         self.host = host
         self.port = port
-        self.socket = None
+        self.client_socket = None
 
     def connect(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect(server_address)
+        print(f"Connected to Redis on {self.host}:{self.port}")
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.connect((self.host, self.port))
 
-    def close(self):
-        self.socket.close()
+    def end(self):
+        self.client_socket.close()
+
+    def run(self):
+        client_in = input(f"{self.host}:{self.port}> ")
+        while client_in.lower().strip() != 'bye':
+            self.client_socket.send(serializeRequest(client_in).encode())  # send message
+            server_response = self.client_socket.recv(1024).decode()  # receive response
+
+            print('Received from redis: ' + server_response)  # show in terminal
+
+            client_in = input(f"{self.host}:{self.port}> ")  # again take input
+        self.end()
+
+    def start(self):
+        self.connect()
+        self.run()
 
 
 if __name__ == "__main__":
-    server_address = ('localhost', 6379)
-
-    # Connect the socket to the port where the server is listening
-    print(sys.stderr, 'connecting to %s port %s' % server_address)
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(server_address)
-
-    message = input("Send a message: ")
-
-    while message.lower().strip() != 'bye':
-        client_socket.send(message.encode())  # send message
-        data = client_socket.recv(1024).decode()  # receive response
-
-        print('Received from server: ' + data)  # show in terminal
-
-        message = input(" -> ")  # again take input
-
-    client_socket.close()  # close the connection
+    client = RedisClient()
+    client.connect()
+    client.run()
