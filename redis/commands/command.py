@@ -23,9 +23,11 @@ class Command:
     def execute(self):
         pass
 
+    @property
     def ok(self) -> str:
         return serialize(RespType.SIMPLE_STRING, 'OK')
 
+    @property
     def null(self):
         return serialize(RespType.NULL, '')
 

@@ -21,7 +21,7 @@ class Set(StringCommand):
 
     def execute(self):
         self.store.setString(self.key, self.val)
-        return self.ok()
+        return self.ok
 
 
 class Get(StringCommand):
@@ -32,5 +32,5 @@ class Get(StringCommand):
 
     def execute(self):
         if not self.exists(self.key):
-            return self.null()
+            return self.null
         return self.store.getString(self.key).val
