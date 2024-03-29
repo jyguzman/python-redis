@@ -1,5 +1,7 @@
 from ..store.store import Store
 from typing import Dict
+from resp.resp import RespType, serialize
+
 
 def register_command(name):
     def decorator(cls):
@@ -21,6 +23,15 @@ class Command:
     def execute(self):
         pass
 
+    def ok(self) -> str:
+        return serialize(RespType.SIMPLE_STRING, 'OK')
+
+    def null(self):
+        return serialize(RespType.NULL, '')
+
+    def error(self, err: str) -> str:
+        return serialize(RespType.SIMPLE_ERROR, err)
+
     @property
     def name(self):
         return self.__class__.__name__
@@ -35,3 +46,13 @@ class Echo(Command):
 
     def execute(self) -> str:
         return self.arg
+
+
+@register_command('ping')
+class Ping(Command):
+    def __init__(self, args):
+        super().__init__(args)
+        self.reply_types = RespType.SIMPLE_STRING
+
+    def execute(self) -> str:
+        return serialize(RespType.SIMPLE_STRING, 'PONG')

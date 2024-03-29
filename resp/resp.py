@@ -1,7 +1,15 @@
 from typing import List, Tuple
+from enum import Enum, auto
 
 CRLF = '\r\n'
 
+class RespType(Enum):
+    SIMPLE_STRING = auto()
+    BULK_STRING = auto()
+    SIMPLE_ERROR = auto()
+    INTEGER = auto()
+    ARRAY = auto()
+    NULL = auto()
 
 def serializeInt(n: int | str) -> str:
     if n is str:
@@ -18,7 +26,19 @@ def serializeSimpleError(e: str) -> str:
 
 
 def serializeBulkString(s: str) -> str:
+    if s == '-1':
+        return f'$-1{CRLF}'
     return f'${len(s)}{CRLF}{s}{CRLF}'
+
+def serialize(type: RespType, msg: str) -> str:
+    if type == RespType.NULL:
+        return serializeBulkString('-1')
+    return {
+        RespType.SIMPLE_STRING: serializeSimpleString,
+        RespType.SIMPLE_ERROR: serializeSimpleError,
+        RespType.INTEGER: serializeInt,
+        RespType.BULK_STRING: serializeBulkString
+    }[type](msg)
 
 
 def serializeRequest(req: str) -> str:
